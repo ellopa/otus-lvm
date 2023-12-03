@@ -10,15 +10,15 @@
 
 Работа со снапшотами:
 
-- сгенерим файлы в /home/
-- снимет снапшот
-- удалим часть файлов
+- сгенерить файлы в /home/
+- снять снапшот
+- удалить часть файлов
 - восстановится со снапшота
 
 
 ## Уменьшение тома под / до 8G
 
-- Посмотрим на диски
+- Посмотреть на диски
 
 ```bash
 [vagrant@lvm ~]$ sudo -i
@@ -36,18 +36,18 @@ sdd                       8:48   0    1G  0 disk
 sde                       8:64   0    1G  0 disk 
 ```
 
-- Подготовим временный том для / раздела
+- Подготовить временный том для / раздела
 
 ```
 root@lvm ~]# pvcreate /dev/sdb
   Physical volume "/dev/sdb" successfully created.
 ```
-- Создаем VG  vg_root
+- Создать VG  vg_root
 ```
 [root@lvm ~]# vgcreate vg_root /dev/sdb
   Volume group "vg_root" successfully created
 ```
-- Создаем логический том  lv_root
+- Создать логический том  lv_root
 ```
 [root@lvm ~]# lvcreate -n lv_root -l +100%FREE /dev/vg_root
 WARNING: ext4 signature detected on /dev/vg_root/lv_root at offset 1080. Wipe it? [y/n]: y
@@ -55,7 +55,7 @@ WARNING: ext4 signature detected on /dev/vg_root/lv_root at offset 1080. Wipe it
   Logical volume "lv_root" created.
 ```
 
-- Создадим на нем файловую систему и смонтируем его, чтобы перенести туда данные
+- Создать на нем файловую систему и смонтировать его, чтобы перенести туда данные
 
 ```
 [root@lvm ~]# mkfs.xfs /dev/vg_root/lv_root
@@ -74,7 +74,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
 [root@lvm ~]# mount /dev/vg_root/lv_root /mnt
 ```
 
-- Этой командой скопируем все данные с / раздела в /mnt
+- Копируем все данные с / раздела в /mnt
 
 ```
 root@lvm ~]# xfsdump -J - /dev/VolGroup00/LogVol00 | xfsrestore -J - /mnt
@@ -122,15 +122,15 @@ xfsdump: Dump Status: SUCCESS
 xfsrestore: restore complete: 7 seconds elapsed
 xfsrestore: Restore Status: SUCCESS
 ```
-- Проверим 
+- Проверить 
 ```
 [root@lvm ~]# ls /mnt
 bin   data       dev  home  lib64  mnt  proc  run   srv  tmp  vagrant
 boot  data-snap  etc  lib   media  opt  root  sbin  sys  usr  var
 ```
-- Затем переконфигурируем grub для того, чтобы при старте перейти в новый /
+- Переконфигурировать grub для того, чтобы при старте перейти в новый /
 
-Сымитируем текущий **root** -> сделаем в него [chroot](https://wiki.archlinux.org/title/Chroot_(%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9)) и обновим **grub**:
+Сымитировать текущий **root** -> сделать в него [chroot](https://wiki.archlinux.org/title/Chroot_(%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9)) и обновим **grub**:
 
 ```
 [root@lvm ~]# for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
@@ -142,7 +142,7 @@ Found initrd image: /boot/initramfs-3.10.0-862.2.3.el7.x86_64.img
 done
 ```
 
-- Обновим образ **initrd**
+- Обновить образ **initrd**
 
 Загрузочный RAM диск (Initrd) - это образ корневой файловой системы (фс),
 который монтируется до того как настоящая корневая фс будет доступна.
@@ -219,13 +219,13 @@ Skipping udev rule: 91-permissions.rules
 *** Creating initramfs image file '/boot/initramfs-3.10.0-862.2.3.el7.x86_64.img' done ***
 ```
 
-- Для монтирования при загрузке  нужного root вносим изменения в файле /boot/grub2/grub.cfg заменитþ rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_roo
+- Для монтирования при загрузке  нужного root внести изменения в файле /boot/grub2/grub.cfg заменитþ rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_roo
 
 ```
 sed -i 's/rd\.lvm\.lv=VolGroup00\/LogVol00/rd\.lvm\.lv=vg_root\/lv_root/g' /boot/grub2/grub.cfg
 ```
 
-- Перезагружаемся и проверяем
+- Перезагрузится и проверить
 
 ```
 shutdown -r now
@@ -246,7 +246,7 @@ sdd                       8:48   0    1G  0 disk
 sde                       8:64   0    1G  0 disk
 ```
 
-- Теперь нам нужно изменить размер старой VG и вернуть на него рут. Для этого удаляем старый LV размеров в 40G и создаем новый на 8G
+- Теперь нам нужно изменить размер старой VG и вернуть на него рут. Для этого удалить старый LV размеров в 40G и создать новый на 8G
 
 ```[vagrant@lvm ~]$ sudo -i
 [root@lvm ~]# lvremove /dev/VolGroup00/LogVol00
@@ -258,7 +258,7 @@ WARNING: xfs signature detected on /dev/VolGroup00/LogVol00 at offset 0. Wipe it
   Logical volume "LogVol00" created.
 ```
 
-- Заново повторяем команды по созданию на нем файловой системы, монтировнию его и копированию всех данных с / раздела в /mnt:
+- Выполнить команды по созданию на нем файловой системы, монтировнию и копированию всех данных с / раздела в /mnt:
 
 ```
 [root@lvm ~]# mkfs.xfs /dev/VolGroup00/LogVol00
@@ -317,7 +317,7 @@ xfsrestore: restore complete: 6 seconds elapsed
 xfsrestore: Restore Status: SUCCESS
 ```
 
-- Переконфигурируем grub, за исключением правки /etc/grub2/grub.cfg
+- Переконфигурировать grub, за исключением правки /etc/grub2/grub.cfg
 
 ```
 [root@lvm ~]# for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
@@ -341,11 +341,11 @@ Executing: /sbin/dracut -v initramfs-3.10.0-862.2.3.el7.x86_64.img 3.10.0-862.2.
 *** Creating initramfs image file '/boot/initramfs-3.10.0-862.2.3.el7.x86_64.img' done ***
 ```
 
-> Не перезагружаемся и не выходим из под chroot — выполним перенос /var
+> Чтобы выполнить сразу перенос /var, пока не перезагружаться и не выходить из под chroot.
 
 ## Выделение тома под /var в зеркало
 
-- На свободных дисках создаем зеркало
+- На свободных дисках создать зеркало
 
 ```
 [root@lvm boot]# pvcreate /dev/sdc /dev/sdd
@@ -363,7 +363,7 @@ Executing: /sbin/dracut -v initramfs-3.10.0-862.2.3.el7.x86_64.img 3.10.0-862.2.
   Logical volume "lv_var" created.
 ```
 
-- Создаем на нем ФС и перемещаем туда /var
+- Создать на нем ФС и переместить туда /var
 
 ```
 [root@lvm boot]# mkfs.ext4 /dev/vg_var/lv_var
@@ -395,20 +395,20 @@ Writing superblocks and filesystem accounting information: done
 [root@lvm boot]# cp -aR /var/* /mnt/ # rsync -avHPSAX /var/ /mnt/
 ```
 
-- На всякий случай сохраняем содержимое старого var (или же можно его просто удалить)
+- Сохранить содержимое старого var ( на всякий случай) или просто удалить
 
 ```
 [root@lvm boot]# mkdir /tmp/oldvar && mv /var/* /tmp/oldvar
 ```
 
-- Монтируем новый var в каталог /var
+- Смонтировать новый var в каталог /var
 
 ```
 [root@lvm boot]# umount /mnt
 [root@lvm boot]# mount /dev/vg_var/lv_var /var
 ```
 
-- Правим fstab для автоматического монтирования /var
+- Изменить fstab для автоматического монтирования /var
 
 ```
 [root@lvm boot]# echo "`blkid | grep var: | awk '{print $2}'` /var ext4 defaults 0 0" >> /etc/fstab
@@ -491,7 +491,7 @@ sde                        8:64   0    1G  0 disk
 
 ## Выделение тома под /home
 
-- Выделяем том под /home по тому же принципу что делали для /var
+- Выделить том под /home по тому же принципу что делали для /var
 
 ```
 [root@lvm ~]# lvcreate -n LogVol_Home -L 2G /dev/VolGroup00
@@ -513,7 +513,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
 [root@lvm ~]# mount /dev/VolGroup00/LogVol_Home /home/
 ```
 
-- Правим fstab для автоматического монтирования /home
+- Изменить fstab для автоматического монтирования /home
 
 ```
 [root@lvm ~]# echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
@@ -540,13 +540,13 @@ UUID="a65399dd-44d7-4992-b1b7-a36d054e7938" /home xfs defaults 0 0
 
 ## /home - сделаем том для снапшотов
 
-- Сгенерируем файлы в /home/
+- Сгенерировать файлы в /home/
 
 ```
 [root@lvm ~]# touch /home/file{1..20}
 ```
 
-- Снимем снапшот
+- Снять снапшот
 
 ```
 [root@lvm ~]# lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
@@ -554,14 +554,14 @@ UUID="a65399dd-44d7-4992-b1b7-a36d054e7938" /home xfs defaults 0 0
   Logical volume "home_snap" created.
 ```
 
-- Удалим часть файлов
+- Удалить часть файлов
 
 ```
 [root@lvm ~]# rm -f /home/file{11..20}
 
 ```
 
-- Процесс восстановления со снапшота
+- Восстановить со снапшота
 
 ```
 root@lvm ~]# umount /home
